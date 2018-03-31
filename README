@@ -1,0 +1,25 @@
+# mattools
+Matrix parser and some related tools. Got only matgen and matinverse two tools so far.
+
+矩阵工具集，实现文本形式矩阵解析器，输出gsl_matrix类型矩阵。目前该工具集包含两个工具：matgen生成单位矩阵，matinverse生成逆矩阵。
+
+## prerequest
+gsl library is required.
+
+## matrix parser
+Text file, with space/tab/comma seperated numbers. Dimension is derivated from first none blank line (with at least one number in it). 
+
+**_require square matrix now!_**
+
+
+输入文件格式：空格、tab、逗号间隔的数字组成的行集合而成，分隔符可以混用；
+
+注意：目前要求方阵
+
+## matgen
+矩阵生产
+
+## matinverse
+矩阵求逆
+输入: mat.dat
+输出: out.dat
