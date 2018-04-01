@@ -78,14 +78,14 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = matinverse$(EXEEXT) matgen$(EXEEXT)
+bin_PROGRAMS = matgen$(EXEEXT) matadd$(EXEEXT) matinverse$(EXEEXT)
 subdir = .
 DIST_COMMON = INSTALL NEWS README AUTHORS ChangeLog \
 	$(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
-	$(srcdir)/config.h.in mat_parse.h mat_parse.c mat_lex.c \
-	depcomp ylwrap COPYING compile config.guess config.sub \
-	install-sh missing
+	$(srcdir)/config.h.in idxmat_parse.h idxmat_parse.c \
+	idxmat_lex.c mat_parse.h mat_parse.c mat_lex.c depcomp ylwrap \
+	COPYING compile config.guess config.sub install-sh missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -98,15 +98,18 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
+am_matadd_OBJECTS = idxmat_parse.$(OBJEXT) idxmat_lex.$(OBJEXT) \
+	matadd.$(OBJEXT) vary_array.$(OBJEXT)
+matadd_OBJECTS = $(am_matadd_OBJECTS)
+am__DEPENDENCIES_1 =
+matadd_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_matgen_OBJECTS = mat_gen.$(OBJEXT)
 matgen_OBJECTS = $(am_matgen_OBJECTS)
 matgen_LDADD = $(LDADD)
 am_matinverse_OBJECTS = mat_parse.$(OBJEXT) mat_lex.$(OBJEXT) \
 	main.$(OBJEXT) vary_array.$(OBJEXT)
 matinverse_OBJECTS = $(am_matinverse_OBJECTS)
-matinverse_LDADD = $(LDADD)
-matinverse_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(matinverse_LDFLAGS) \
-	$(LDFLAGS) -o $@
+matinverse_DEPENDENCIES = $(am__DEPENDENCIES_1)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -148,8 +151,9 @@ AM_V_YACC = $(am__v_YACC_@AM_V@)
 am__v_YACC_ = $(am__v_YACC_@AM_DEFAULT_V@)
 am__v_YACC_0 = @echo "  YACC    " $@;
 am__v_YACC_1 = 
-SOURCES = $(matgen_SOURCES) $(matinverse_SOURCES)
-DIST_SOURCES = $(matgen_SOURCES) $(matinverse_SOURCES)
+SOURCES = $(matadd_SOURCES) $(matgen_SOURCES) $(matinverse_SOURCES)
+DIST_SOURCES = $(matadd_SOURCES) $(matgen_SOURCES) \
+	$(matinverse_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -298,7 +302,9 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_YFLAGS = -d
 matinverse_SOURCES = mat_parse.y mat_lex.l main.c vary_array.h vary_array.c
-matinverse_LDFLAGS = -lgsl -lgslcblas $(MATINV_LIBS)
+matinverse_LDADD = -lgsl -lgslcblas $(MATINV_LIBS)
+matadd_SOURCES = idxmat_parse.y idxmat_lex.l matadd.c vary_array.h vary_array.c
+matadd_LDADD = -lgsl -lgslcblas $(MATINV_LIBS)
 EXTRA_DIST = mat_parse_manual.h mat_parse_manual.c
 matgen_SOURCES = mat_gen.c
 all: config.h
@@ -397,6 +403,13 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+idxmat_parse.h: idxmat_parse.c
+	@if test ! -f $@; then rm -f idxmat_parse.c; else :; fi
+	@if test ! -f $@; then $(MAKE) $(AM_MAKEFLAGS) idxmat_parse.c; else :; fi
+
+matadd$(EXEEXT): $(matadd_OBJECTS) $(matadd_DEPENDENCIES) $(EXTRA_matadd_DEPENDENCIES) 
+	@rm -f matadd$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(matadd_OBJECTS) $(matadd_LDADD) $(LIBS)
 
 matgen$(EXEEXT): $(matgen_OBJECTS) $(matgen_DEPENDENCIES) $(EXTRA_matgen_DEPENDENCIES) 
 	@rm -f matgen$(EXEEXT)
@@ -407,7 +420,7 @@ mat_parse.h: mat_parse.c
 
 matinverse$(EXEEXT): $(matinverse_OBJECTS) $(matinverse_DEPENDENCIES) $(EXTRA_matinverse_DEPENDENCIES) 
 	@rm -f matinverse$(EXEEXT)
-	$(AM_V_CCLD)$(matinverse_LINK) $(matinverse_OBJECTS) $(matinverse_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(matinverse_OBJECTS) $(matinverse_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -415,10 +428,13 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/idxmat_lex.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/idxmat_parse.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mat_gen.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mat_lex.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mat_parse.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/matadd.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vary_array.Po@am__quote@
 
 .c.o:
@@ -700,6 +716,9 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-rm -f idxmat_lex.c
+	-rm -f idxmat_parse.c
+	-rm -f idxmat_parse.h
 	-rm -f mat_lex.c
 	-rm -f mat_parse.c
 	-rm -f mat_parse.h
